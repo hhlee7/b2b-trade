@@ -34,8 +34,8 @@
 		FROM contract c INNER JOIN quotation q ON c.quotation_no = q.quotation_no
 		INNER JOIN (SELECT
 						product_request_no,
-						address_no,
-						create_user
+						ANY_VALUE(address_no) as address_no,
+						ANY_VALUE(create_user) as create_user
 					FROM product_request
 					GROUP BY product_request_no) t ON q.product_request_no = t.product_request_no
 		INNER JOIN address a ON t.address_no = a.address_no
