@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductService {
 	private final ProductMapper productMapper;
 
-	private static final String UPLOAD_DIR = "/home/ubuntu/uploads/product/";
+	private static final String UPLOAD_DIR = "C:/uploads/product/";
 	
 	public ProductService(ProductMapper productMapper) {
 		this.productMapper = productMapper;
