@@ -157,4 +157,10 @@ public interface AdminMapper {
 
 	// 전체 회원 목록 조회
 	List<String> getAllUserIds();
+
+	// 기업 회원 배송 건 현재 상태 + version 조회
+	ContractDelivery selectBizDeliveryById(int contractDeliveryNo);
+
+	// 낙관적 락 기반 배송 완료로 상태 변경
+	int updateBizDeliveryCompleteWithVersion(ContractDelivery contractDelivery);
 }

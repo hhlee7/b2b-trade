@@ -685,4 +685,25 @@
 		AND customer_category = "CC002"
 		OR customer_category = "CC003"
 	</select>
+	
+	<!-- 기업 회원 배송 단건 조회(낙관적 락 적용 시) -->
+	<select id="selectBizDeliveryById" parameterType="int" resultType="com.example.trade.dto.ContractDelivery">
+		SELECT
+			contract_delivery_no AS contractDeliveryNo,
+			contract_delivery_status AS contractDeliveryStatus,
+			container_no AS containerNo,
+			version
+		FROM contract_delivery
+		WHERE contract_delivery_no = #{contractDeliveryNo}
+	</select>
+	
+	<update id="updateBizDeliveryCompleteWithVersion" parameterType="com.example.trade.dto.ContractDelivery">
+		UPDATE contract_delivery
+		SET
+			contract_delivery_status = #{contractDeliveryStatus},
+			version = version + 1
+		WHERE contract_delivery_no = #{contractDeliveryNo}
+		AND version = #{version}
+		AND contract_delivery_status = 'DS002'
+	</update>
 </mapper>

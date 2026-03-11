@@ -175,9 +175,15 @@ public class AdminDeliveryController {
     
     // 기업 회원 배송 완료 처리
 	@PostMapping("/admin/bizDeliveryComplete")
-	public String bizDeliveryComplete(ContractDelivery contractDelivery, DeliveryHistory deliveryHistory) {
+	public String bizDeliveryComplete(ContractDelivery contractDelivery, DeliveryHistory deliveryHistory, RedirectAttributes rttr) {
 		
-		adminDeliveryService.bizDeliveryComplete(contractDelivery, deliveryHistory);
+		int result = adminDeliveryService.bizDeliveryComplete(contractDelivery, deliveryHistory);
+		
+		if(result > 0) {
+    		rttr.addFlashAttribute("msg", "배송 완료 처리되었습니다.");
+    	} else {
+    		rttr.addFlashAttribute("msg", "이미 처리된 배송이거나 동시 요청된 건입니다.");
+    	}
 		
 		return "redirect:/admin/bizDeliveryList";
 	}

@@ -211,16 +211,42 @@ public class AdminDeliveryService {
 	// 기업 회원 배송 완료 처리
 	@Transactional
 	public int bizDeliveryComplete(ContractDelivery contractDelivery, DeliveryHistory deliveryHistory) {
+		// 1. 현재 배송 정보 조회
+		ContractDelivery currentDelivery = adminMapper.selectBizDeliveryById(contractDelivery.getContractDeliveryNo());
+
+		// 배송 건이 없으면 종료
+		if(currentDelivery == null) {
+			return 0;
+		}
 		
-		// 기존 배송 이력 조회
-		DeliveryHistory newDeliveryHistory = adminMapper.getBizDeliveryHistory(deliveryHistory);
+		// 2. 배송중 상태(DS002)인 경우에만 완료 처리 가능
+		if (!"DS002".equals(currentDelivery.getContractDeliveryStatus())) {
+			return 0;
+		}
 		
-		contractDelivery.setContractDeliveryStatus("DS003"); // 배송완료 처리
-		deliveryHistory.setDeliveryCompany(newDeliveryHistory.getDeliveryCompany()); // 택배사
-		deliveryHistory.setTrackingNo(newDeliveryHistory.getTrackingNo()); // 운송장 번호
-    	deliveryHistory.setDeliveryStatus("DS003"); // 배송완료 처리
+		// 3. 배송 상태 변경 정보 세팅
+		contractDelivery.setContractDeliveryStatus("DS003"); // 배송완료
+		contractDelivery.setVersion(currentDelivery.getVersion());
+		
+		// 4. 낙관적 락 기반 배송 상태 update 시도
+		int updatedRow = adminMapper.updateBizDeliveryCompleteWithVersion(contractDelivery);
+		
+		// 다른 요청이 먼저 처리한 경우 종료
+		if(updatedRow == 0) {
+			return 0;
+		}
+		
+		// 5. update 성공한 요청만 기존 배송 이력 조회(택배사/운송장번호 복사)
+		DeliveryHistory oldDeliveryHistory = adminMapper.getBizDeliveryHistory(deliveryHistory);
+		if(oldDeliveryHistory == null) {
+			return 0;
+		}
+		
+		// 6. 배송 완료 이력 insert 수행
+		deliveryHistory.setDeliveryCompany(oldDeliveryHistory.getDeliveryCompany()); // 택배사
+		deliveryHistory.setTrackingNo(oldDeliveryHistory.getTrackingNo()); // 운송장 번호
+    	deliveryHistory.setDeliveryStatus("DS003"); // 배송완료
     	
-    	adminMapper.updateBizDelivery(contractDelivery);
     	return adminMapper.insertBizDeliveryHistory(deliveryHistory);
 	}
 }

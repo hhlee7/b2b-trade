@@ -15,4 +15,5 @@ public class ContractDelivery {
 	private LocalDateTime contractDeliveryTime;
 	private String contractDeliveryStatus;
 	private int containerNo;
+	private int version;
 }
