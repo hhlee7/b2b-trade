@@ -3,6 +3,7 @@ package com.example.trade.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -177,15 +178,20 @@ public class AdminDeliveryService {
 	@Transactional
 	public int insertBizDelivery(ContractDelivery contractDelivery, DeliveryHistory deliveryHistory) {
 		contractDelivery.setContractDeliveryStatus("DS002"); // 배송중 처리
-		adminMapper.insertContractDelivery(contractDelivery);
 		
-		 // 생성된 contract_delivery_no를 deliveryHistory에 세팅
-	    deliveryHistory.setContractDeliveryNo(contractDelivery.getContractDeliveryNo());
+		try {
+			adminMapper.insertContractDelivery(contractDelivery);
+		} catch (DuplicateKeyException e) {
+			return 0; // 이미 동일 containerNo로 배송 처리된 요청인 경우
+		}
+		
+		// 생성된 contract_delivery_no를 deliveryHistory에 세팅
+		deliveryHistory.setContractDeliveryNo(contractDelivery.getContractDeliveryNo());
 		deliveryHistory.setDeliveryStatus("DS002"); // 배송중 처리
 		
 		// 기업회원 배송 관련 정보 조회
 		Map<String, Object> bizOrder = adminMapper.getBizDeliveryInfo(contractDelivery.getContractDeliveryNo());
-
+		
 		// 배송 시작 시 알림 생성
 		Notification noti = new Notification();
 		noti.setTargetType("USER");

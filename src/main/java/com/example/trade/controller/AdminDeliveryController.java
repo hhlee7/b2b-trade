@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.trade.dto.ContractDelivery;
 import com.example.trade.dto.DeliveryHistory;
@@ -159,9 +160,15 @@ public class AdminDeliveryController {
 
     // 기업 회원 배송 처리
     @PostMapping("/admin/bizDeliveryUpdate")
-    public String bizDeliveryUpdate(ContractDelivery contractDelivery, DeliveryHistory deliveryHistory) {
+    public String bizDeliveryUpdate(ContractDelivery contractDelivery, DeliveryHistory deliveryHistory, RedirectAttributes rttr) {
     	
-    	adminDeliveryService.insertBizDelivery(contractDelivery, deliveryHistory);
+    	int result = adminDeliveryService.insertBizDelivery(contractDelivery, deliveryHistory);
+    	
+    	if(result > 0) {
+    		rttr.addFlashAttribute("msg", "배송 처리가 완료되었습니다.");
+    	} else {
+    		rttr.addFlashAttribute("msg", "이미 배송 처리된 건입니다.");
+    	}
     	
         return "redirect:/admin/bizDeliveryList";
     }

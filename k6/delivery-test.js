@@ -29,6 +29,12 @@ export const options = {
 };
 
 /*
+  SESSION_ID는 k6 실행 시 환경 변수로 전달
+  ex) k6 run -e SESSION_ID=xxxx delivery_test.js
+*/
+const sessionId = __ENV.SESSION_ID || '';
+
+/*
   테스트 실행 함수
   - 각 VU가 실행할 실제 HTTP 요청 정의
 */
@@ -63,7 +69,12 @@ export default function() {
 		redirects: 0,
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
-			'Cookie': 'JSESSIONID=84829964853DB50592FCEAFA4AEAA7B7'
+
+			/*
+			  Spring Security 세션 인증
+			  JSESSIONID를 환경 변수에서 주입
+			*/
+			'Cookie': `JSESSIONID=${sessionId}`
 		}
 	};
 	
