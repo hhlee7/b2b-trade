@@ -329,17 +329,19 @@
 			cd.contract_delivery_time AS contractDeliveryTime,
 			ct.container_no AS containerNo,
 			cd.contract_delivery_no AS contractDeliveryNo
-		FROM contract c INNER JOIN quotation q ON c.quotation_no = q.quotation_no
-		INNER JOIN (SELECT
-						product_request_no,
-						ANY_VALUE(address_no) AS address_no,
-						ANY_VALUE(create_user) AS create_user
-					FROM product_request
-					GROUP BY product_request_no) t ON q.product_request_no = t.product_request_no
-		INNER JOIN address a ON t.address_no = a.address_no
-		INNER JOIN container ct ON c.contract_no = ct.contract_no
-		LEFT JOIN contract_delivery cd ON ct.container_no = cd.container_no
-		ORDER BY c.contract_no DESC
+		FROM contract c
+		INNER JOIN quotation q
+			ON c.quotation_no = q.quotation_no
+		INNER JOIN product_request pr
+			ON q.product_request_no = pr.product_request_no
+			AND pr.sub_product_request_no = 1
+		INNER JOIN address a
+			ON pr.address_no = a.address_no
+		INNER JOIN container ct
+			ON c.contract_no = ct.contract_no
+		LEFT JOIN contract_delivery cd
+			ON ct.container_no = cd.container_no
+		ORDER BY c.contract_no DESC;
 	</select>
 	
 	<!-- 배송 처리 후 기업 회원 주문 조회 -->
