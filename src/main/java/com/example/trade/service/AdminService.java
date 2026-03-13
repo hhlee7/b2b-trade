@@ -20,8 +20,10 @@ import com.example.trade.mapper.AdminMapper;
 @Service
 public class AdminService {
 	private AdminMapper adminMapper;
-	public AdminService(AdminMapper adminMapper) {
+	private NoticeCacheService noticeCacheService;
+	public AdminService(AdminMapper adminMapper, NoticeCacheService noticeCacheService) {
 		this.adminMapper = adminMapper;
+		this.noticeCacheService = noticeCacheService;
 	}
 	
 	// 자주 묻는 질문(FAQ) 목록
@@ -136,13 +138,27 @@ public class AdminService {
 	}
 	
 	// 공지사항 수정
+	@Transactional
 	public int updateNotice(Board board) {
-		return adminMapper.updateNotice(board);
+		int row = adminMapper.updateNotice(board);
+		
+		if(row > 0) {
+			noticeCacheService.evictNoticeOne(board.getBoardNo());
+		}
+		
+		return row;
 	}
 	
 	// 공지사항 삭제
+	@Transactional
 	public int deleteNotice(Board board) {
-		return adminMapper.deleteNotice(board);
+		int row = adminMapper.deleteNotice(board);
+		
+		if(row > 0) {
+			noticeCacheService.evictNoticeOne(board.getBoardNo());
+		}
+		
+		return row;
 	}
 	
 	// 로그인 이력 조회

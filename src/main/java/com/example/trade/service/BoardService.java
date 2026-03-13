@@ -10,11 +10,16 @@ import com.example.trade.dto.Comment;
 import com.example.trade.dto.Page;
 import com.example.trade.mapper.BoardMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class BoardService {
 	private BoardMapper boardMapper;
-	public BoardService(BoardMapper boardMapper) {
+	private NoticeCacheService noticeCacheService;
+	public BoardService(BoardMapper boardMapper, NoticeCacheService noticeCacheService) {
 		this.boardMapper = boardMapper;
+		this.noticeCacheService = noticeCacheService;
 	}
 
 	// 자주 묻는 질문(FAQ) 목록
@@ -89,9 +94,9 @@ public class BoardService {
 
 	// 공지사항 상세 조회
 	public List<Map<String, Object>> getNoticeOne(int boardNo) {
-		// 조회수 증가
+		// 매 요청마다 조회수 증가
 		boardMapper.updateBoardViewCount(boardNo);
-		// 상세 조회
-		return boardMapper.selectNoticeOne(boardNo);
+		// 상세 데이터는 캐시 사용
+		return noticeCacheService.getNoticeOne(boardNo);
 	}
 }
