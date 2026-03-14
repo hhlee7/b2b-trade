@@ -303,7 +303,12 @@ public class AdminController {
 	public String noticeUpdate(Board board, Principal principal) {
 		String username = principal.getName(); // 로그인한 관리자
 		board.setUpdateUser(username);
-		adminService.updateNotice(board);
+		
+		int row = adminService.updateNotice(board);
+		
+		if(row > 0) {
+			return "redirect:/admin/noticeOne?boardNo=" + board.getBoardNo();
+		}
 		return "redirect:/admin/noticeOne?boardNo=" + board.getBoardNo();
 	}
 	
@@ -312,8 +317,13 @@ public class AdminController {
 	public String noticeDelete(Board board, Principal principal) {
 		String username = principal.getName(); // 로그인한 관리자
 		board.setUpdateUser(username);
-		adminService.deleteNotice(board);
-		return "redirect:/admin/noticeList";
+		
+		int row = adminService.deleteNotice(board);
+		
+		if(row > 0) {
+			return "redirect:/admin/noticeList";
+		}
+		return "redirect:/admin/noticeOne?boardNo=" + board.getBoardNo();
 	}
 	
 	// 로그인 이력 조회 페이지
