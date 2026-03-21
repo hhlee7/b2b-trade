@@ -108,9 +108,10 @@
 		<form action="/admin/commentWrite" method="post" class="mb-4">
 			<input type="hidden" name="boardNo" value="${QNAOne[0].boardNo}">
 			<div class="mb-3">
-				<textarea class="form-control" name="commentContent" rows="4" placeholder="답변을 입력하세요"></textarea>
+				<textarea id="commentContent" class="form-control" name="commentContent" rows="4" placeholder="답변을 입력하세요"></textarea>
 			</div>
 			<div class="text-start">
+				<button type="button" id="aiDraftBtn" class="btn btn-outline-secondary">AI 답변 초안 생성</button>
 				<button type="submit" class="btn btn-success">등록</button>
 			</div>
 		</form>
@@ -130,6 +131,37 @@
 	function showEditForm(commentNo) {
 	    $("#editForm-" + commentNo).toggle();
 	}
+
+	// AI 답변 초안 생성
+	$("#aiDraftBtn").on("click", function () {
+
+		// 문의 제목과 본문을 Claude에게 넘길 데이터로 구성
+		// 불필요한 메타데이터(작성자, 날짜 등)는 제외 - 토큰 절약
+		var boardTitle = "${QNAOne[0].boardTitle}";
+		var boardContent = "${QNAOne[0].boardContent}";
+
+		$("#aiDraftBtn").text("생성 중...").prop("disabled", true);
+
+		$.ajax({
+			url: "/admin/ai/qna-draft",
+			type: "POST",
+			contentType: "application/json",
+			data: JSON.stringify({
+				boardTitle: boardTitle,
+				boardContent: boardContent
+			}),
+			success: function (response) {
+				// 생성된 초안을 textarea에 자동으로 채워줌
+				// 관리자는 검토 후 수정하거나 그대로 등록 가능
+				$("#commentContent").val(response.draft);
+				$("#aiDraftBtn").text("AI 답변 초안 생성").prop("disabled", false);
+			},
+			error: function () {
+				alert("AI 초안 생성 중 오류가 발생했습니다.");
+				$("#aiDraftBtn").text("AI 답변 초안 생성").prop("disabled", false);
+			}
+		});
+	});
 </script>
 
 </body>
